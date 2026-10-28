@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-29
+
 ### Added
 - Manual: the map follows the console's cell (bitchat-geohash 0.2.0).
 - `bitchat-launcher <geohash>`: starts bitchat-geohash and bitchat-console over it, on 8080 or
