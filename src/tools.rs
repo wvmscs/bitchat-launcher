@@ -229,7 +229,11 @@ mod tests {
         let l = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let p = l.local_addr().unwrap().port();
         assert!(listening(p).await);
+        // A port bound but not listening: refused, and no other test can
+        // take it meanwhile.
+        let held = tokio::net::TcpSocket::new_v4().unwrap();
+        held.bind("127.0.0.1:0".parse().unwrap()).unwrap();
+        assert!(!listening(held.local_addr().unwrap().port()).await);
         drop(l);
-        assert!(!listening(p).await);
     }
 }
