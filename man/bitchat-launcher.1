@@ -45,7 +45,9 @@ listens on the relays the iOS and Android apps choose, read\-only, and shows cou
 .B bitchat-console
 a BitChat client for location channels: it follows a cell and its 8 neighbours through Tor,
 writes there, and talks in private and in groups. With the map, it serves the map's page
-with the console floating over it; a cell of the map can be followed in one click.
+with the console floating over it; a cell of the map can be followed in one click, and when
+the console follows another cell, the map watches the area around it (its parent) with
+bitchat-geohash 0.2.0 or later. The map's own panel can also change the watched area.
 .PP
 The launcher picks the ports, finds a working Tor, makes the HTTPS certificate, starts the
 map on a loopback port of its own and the console on the page's port, waits until both

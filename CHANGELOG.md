@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- Manual: the map follows the console's cell (bitchat-geohash 0.2.0).
 - `bitchat-launcher <geohash>`: starts bitchat-geohash and bitchat-console over it, on 8080 or
   a free port of 50000–60000 (the map on another one, loopback only), in HTTPS with a mkcert
   certificate made once (`--tls-cert`/`--tls-key`, `--http`), with the first working Tor of

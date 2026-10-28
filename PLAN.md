@@ -28,3 +28,4 @@ Toutes *prises par l'agent, à revoir*, sauf celles de la demande.
 | Date | Fait |
 |------|------|
 | 28/10/2026 | Crate créée (args, ports, tor, tls, tools), `--help`, manuel, 22 tests hors ligne. Essais réels : Arti en repli quand le démon était arrêté ; démon par 127.0.0.1:9050 ; `BITCHAT_TOR_SOCKS` mort → 9050 ; 8080 occupé → 54586 ; HTTPS en HTTP/2 avec certificat de confiance, carte et console servies, `/api/state` ; arrêt propre. A révélé un défaut de bitchat-console (un flux de la carte relayé retenait l'arrêt 20 s), corrigé dans la console. Limite connue : deux lanceurs lancés au même instant peuvent choisir le même port ; le second s'arrête alors avec un message. |
+| 28/10/2026 | Manuel : la carte suit la cellule de la console (bitchat-geohash 0.2.0, D30 de la console). |
