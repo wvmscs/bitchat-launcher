@@ -62,8 +62,26 @@ fn launcher(dir: &Path, extra: &[&str]) -> Child {
         .unwrap()
 }
 
-/// Lines of the launcher's stderr until one contains `what`.
-fn until(child: &mut Child, what: &str) -> Vec<String> {
+/// Starts the launcher and reads its stderr until a line contains `what`.
+/// The free port a test picks can be taken by another test before the
+/// launcher binds it: then it starts again on another one.
+fn start(dir: &Path, extra: &[&str], what: &str) -> (Child, Vec<String>) {
+    for _ in 0..5 {
+        let mut l = launcher(dir, extra);
+        match until(&mut l, what) {
+            Ok(lines) => return (l, lines),
+            Err(lines) if lines.iter().any(|x| x.contains("already in use")) => {
+                let _ = l.wait();
+            }
+            Err(lines) => panic!("no {what:?} in {lines:#?}"),
+        }
+    }
+    panic!("no free port");
+}
+
+/// Lines of the launcher's stderr until one contains `what`; `Err` with
+/// them if it ends or takes too long.
+fn until(child: &mut Child, what: &str) -> Result<Vec<String>, Vec<String>> {
     let err = child.stderr.take().unwrap();
     let (tx, rx) = std::sync::mpsc::channel();
     std::thread::spawn(move || {
@@ -74,15 +92,19 @@ fn until(child: &mut Child, what: &str) -> Vec<String> {
     let mut seen = Vec::new();
     let start = Instant::now();
     while start.elapsed() < Duration::from_secs(20) {
-        if let Ok(l) = rx.recv_timeout(Duration::from_millis(100)) {
-            let done = l.contains(what);
-            seen.push(l);
-            if done {
-                return seen;
+        match rx.recv_timeout(Duration::from_millis(100)) {
+            Ok(l) => {
+                let done = l.contains(what);
+                seen.push(l);
+                if done {
+                    return Ok(seen);
+                }
             }
+            Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => return Err(seen),
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {}
         }
     }
-    panic!("no {what:?} in {seen:#?}");
+    Err(seen)
 }
 
 fn args_of(dir: &Path, tool: &str) -> Vec<String> {
@@ -110,8 +132,11 @@ fn wait(child: &mut Child) -> i32 {
 #[test]
 fn starts_both_then_stops_both() {
     let d = scratch("run");
-    let mut l = launcher(&d, &["--console-args", "--no-presence"]);
-    let lines = until(&mut l, "Ctrl-C stops both");
+    let (mut l, lines) = start(
+        &d,
+        &["--console-args", "--no-presence"],
+        "Ctrl-C stops both",
+    );
     let url = lines.last().unwrap();
     assert!(url.contains("http://localhost:"), "{url}");
 
@@ -147,18 +172,19 @@ fn starts_both_then_stops_both() {
 fn one_failing_stops_the_other() {
     let d = scratch("fail");
     std::fs::write(d.join("bitchat-console.fail"), "").unwrap();
-    let mut l = launcher(&d, &[]);
-    let lines = until(&mut l, "stopped while starting");
+    let (mut l, lines) = start(&d, &[], "stopped while starting");
     assert!(
         lines.iter().any(|l| l.contains("bitchat-console")),
         "{lines:?}"
     );
     assert_eq!(wait(&mut l), 1);
-    let map_listen = {
+    // The map was stopped too: it no longer listens (or was stopped before
+    // it even wrote its arguments down).
+    if d.join("bitchat-geohash.args").exists() {
         let map = args_of(&d, "bitchat-geohash");
-        map[map.iter().position(|a| a == "--listen").unwrap() + 1].clone()
-    };
-    assert!(std::net::TcpStream::connect(&map_listen).is_err());
+        let map_listen = map[map.iter().position(|a| a == "--listen").unwrap() + 1].clone();
+        assert!(std::net::TcpStream::connect(&map_listen).is_err());
+    }
     std::fs::remove_dir_all(&d).unwrap();
 }
 
