@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 William VITAL, FR (wvmscs)
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 //! The command line: the launcher's own options, and what goes to each tool.
 
 use std::net::SocketAddr;
@@ -378,7 +381,7 @@ mod tests {
             "--console-args",
             "--pow-bits 12 --no-presence",
             "--map-args",
-            "--tiles https://t/{z}/{x}/{y}.png --tiles-attribution '© me, you'",
+            "--tiles https://t/{z}/{x}/{y}.png --tiles-attribution 'tiles: me, you'",
             "--console-bin",
             "/b/c",
             "--map-bin",
@@ -402,7 +405,7 @@ mod tests {
             }
         );
         assert_eq!(a.console_args, ["--pow-bits", "12", "--no-presence"]);
-        assert_eq!(a.map_args[3], "© me, you");
+        assert_eq!(a.map_args[3], "tiles: me, you");
         assert_eq!(a.console_bin, Some(PathBuf::from("/b/c")));
         assert_eq!(run(&["u09", "--arti", "--http"]).unwrap().https, Https::Off);
     }

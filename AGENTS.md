@@ -11,8 +11,9 @@ them: they need two SQLite versions that cannot be linked together (bitchat-cons
 ## Constraints
 
 ### Do NOT
-- Modify `bitchat-geohash`, `bitchat-envelope`, `nip90-dvm`, the workspace `Nostr/Cargo.toml`
-  or `src/` (read-only). `bitchat-console` and `geohash-relays` follow their own `AGENTS.md`.
+- Modify `bitchat-envelope`, `nip90-dvm`, the workspace `Nostr/Cargo.toml` or `src/`
+  (read-only). `bitchat-console`, `bitchat-geohash` and `geohash-relays` follow their own
+  `AGENTS.md`.
 - Give the console a way to reach relays without Tor: the launcher passes `--tor-socks` or
   `--arti`, never nothing.
 - Serve anything beyond the loopback.
@@ -34,7 +35,14 @@ them: they need two SQLite versions that cannot be linked together (bitchat-cons
 cargo fmt --check
 cargo clippy --all-targets -- -D warnings
 cargo test
+reuse lint      # every file has its copyright and licence (also a GitHub Action)
 ```
+
+<!-- REUSE-IgnoreStart -->
+A new file starts with
+`SPDX-FileCopyrightText: 2026 William VITAL, FR (wvmscs)` and
+`SPDX-License-Identifier: GPL-3.0-or-later` in a comment, or is covered by `REUSE.toml`.
+<!-- REUSE-IgnoreEnd -->
 
 ## Style
 

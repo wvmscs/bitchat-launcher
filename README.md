@@ -44,4 +44,5 @@ cargo test     # offline: fake tools, fake SOCKS proxy, fake mkcert
 
 ## Licence
 
-GPL-3.0-only.
+GPL-3.0-or-later. Every file says so with its SPDX tags ([REUSE](https://reuse.software)): a header, or `REUSE.toml`;
+the licence texts are in `LICENSES/`.

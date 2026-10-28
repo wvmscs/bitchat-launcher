@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 William VITAL, FR (wvmscs)
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 //! The page's certificate: given, or made once with mkcert.
 
 use std::path::{Path, PathBuf};

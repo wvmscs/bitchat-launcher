@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 William VITAL, FR (wvmscs)
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 //! `bitchat-launcher`: starts bitchat-geohash (the map) and bitchat-console
 //! (over it) together, on free ports, in HTTPS, with a working Tor.
 //!

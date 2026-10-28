@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 William VITAL, FR (wvmscs)
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 //! The launcher's binary with two fake tools (Python scripts that listen
 //! where they are told and write down their arguments).
 

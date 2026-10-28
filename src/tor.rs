@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 William VITAL, FR (wvmscs)
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 //! Which Tor the console gets: `$BITCHAT_TOR_SOCKS`, then the daemon's
 //! default port, then Arti.
 

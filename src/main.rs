@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 William VITAL, FR (wvmscs)
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 //! `bitchat-launcher <geohash> [options]`: see `--help` and `--man`.
 //!
 //! Exit code 2 for a wrong command line, 1 when a tool cannot start or
