@@ -1,0 +1,16 @@
+[package]
+name = "bitchat-launcher"
+version = "0.1.0"
+edition = "2024"
+description = "Starts bitchat-geohash (the map) and bitchat-console (over it) together: free ports, HTTPS, Tor daemon or Arti."
+license = "GPL-3.0-only"
+
+# Own workspace: the crate builds on its own, also inside the local `Nostr/`
+# directory, whose workspace does not list it.
+[workspace]
+
+[dependencies]
+# Two child processes, their output, the signals; TCP checks of ports and Tor.
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "process", "signal", "net", "io-util", "time"] }
+# SIGINT to a child, so that it stops cleanly.
+libc = "0.2"

@@ -1,0 +1,329 @@
+.TH BITCHAT-LAUNCHER 1 "October 2026" "bitchat-launcher 0.1.0" "User Commands"
+.SH NAME
+bitchat-launcher \- the BitChat map (bitchat-geohash) with the console (bitchat-console) over it
+.SH SYNOPSIS
+.B bitchat-launcher
+.I geohash
+.RB [ \-\-teleport ]
+.RB [ \-\-map\-geohash
+.IR gh ]
+.RB [ \-\-depth
+.IR n ]
+.RB [ \-\-no\-open ]
+.RB [ \-\-port
+.IR n ]
+.RB [ \-\-tor\-socks
+.I addr:port
+.RB "| " \-\-arti ]
+.RB [ \-\-tls\-cert
+.I pem
+.B \-\-tls\-key
+.I pem
+.RB "| " \-\-http ]
+.RB [ \-\-console\-args
+.IR args ]
+.RB [ \-\-map\-args
+.IR args ]
+.RB [ \-\-console\-bin
+.IR path ]
+.RB [ \-\-map\-bin
+.IR path ]
+.RB [ \-\-data\-dir
+.IR dir ]
+.RB [ \-\-verbose ]
+.br
+.B bitchat-launcher
+.BR \-\-help " | " \-\-man " | " \-\-version
+.SH DESCRIPTION
+.B bitchat-launcher
+starts two programs together and stops them together:
+.TP
+.B bitchat-geohash
+the live map of BitChat location\-channel activity: for each channel of an area, it
+listens on the relays the iOS and Android apps choose, read\-only, and shows counts per cell.
+.TP
+.B bitchat-console
+a BitChat client for location channels: it follows a cell and its 8 neighbours through Tor,
+writes there, and talks in private and in groups. With the map, it serves the map's page
+with the console floating over it; a cell of the map can be followed in one click.
+.PP
+The launcher picks the ports, finds a working Tor, makes the HTTPS certificate, starts the
+map on a loopback port of its own and the console on the page's port, waits until both
+answer, and opens
+.BI https://localhost: port /
+in the browser. Lines of the tools are printed with
+.B [map]
+or
+.B [console]
+in front. Ctrl\-C (or SIGTERM) stops the console, then the map, each with SIGINT and
+20 seconds to finish (then SIGKILL). If one tool stops on its own, the other is stopped too.
+.SH OPTIONS
+The most used first.
+.TP
+.I geohash
+The cell the console follows, with its 8 neighbours (for example
+.BR u09tv ).
+.TP
+.B \-\-teleport
+You are not in that place: the console tags its messages as teleported and sends no
+presence, like a teleported user of the app. Without it, it sends presences.
+.TP
+.BI \-\-map\-geohash " gh"
+The area of the map. Default: the console's geohash without its last letter
+.RB ( u09tv " gives " u09t ),
+so that the map shows the cells around the one followed.
+.TP
+.BI \-\-depth " n"
+How many channel levels the map watches below its area (the map's
+.BR \-\-depth ;
+its default is 1).
+.TP
+.B \-\-no\-open
+Do not open the browser; the address is printed.
+.TP
+.BI \-\-port " n"
+Port of the page, on 127.0.0.1. Default: 8080 if free, else a free port between 50000 and
+60000. A port given here must be free: there is no fallback. The map gets another free port
+of that range, on 127.0.0.1, reached by the console only.
+.TP
+.BI \-\-tor\-socks " addr:port"
+The Tor daemon's SOCKS port the console uses. It must work: there is no fallback.
+.TP
+.B \-\-arti
+The Tor inside bitchat-console (Arti), which must be built with
+.BR "\-\-features arti" .
+.TP
+.BI \-\-tls\-cert " pem " \-\-tls\-key " pem"
+The page's certificate and private key, instead of the one the launcher makes.
+.TP
+.B \-\-http
+Clear HTTP on the loopback instead of HTTPS. The browser then keeps at most 6 connections
+to the page, one per live view.
+.TP
+.BI \-\-console\-args " args"
+More options for bitchat-console (see
+.BR "CONSOLE OPTIONS" ),
+in one argument split like a shell does:
+.B \-\-console\-args \(aq\-\-pow\-bits 12 \-\-no\-presence\(aq.
+May be repeated. The options the launcher sets are refused:
+.BR \-\-listen ", " \-\-allow\-remote ", " \-\-tls\-cert ", " \-\-tls\-key ", " \-\-map ,
+.BR \-\-tor\-socks ", " \-\-arti ", " \-\-open .
+.TP
+.BI \-\-map\-args " args"
+More options for bitchat-geohash (see
+.BR "MAP OPTIONS" ),
+the same way. Refused:
+.BR \-\-listen ", " \-\-allow\-remote ", " \-\-insecure\-remote ", " \-\-tls\-cert ,
+.BR \-\-tls\-key ", " \-\-open .
+They come after the launcher's own, so a
+.B \-\-db
+given here wins.
+.TP
+.BI \-\-console\-bin " path"
+.TQ
+.BI \-\-map\-bin " path"
+The binaries. Default: next to the launcher's binary, else on
+.BR $PATH .
+.TP
+.BI \-\-data\-dir " dir"
+Where the launcher keeps the certificate
+.RI ( dir /tls)
+and the map's database
+.RI ( dir /bitchat-geohash.sqlite).
+Default:
+.BR ~/.bitchat-launcher ,
+readable by you only. The console keeps its keys in its own directory (its
+.BR \-\-data\-dir ).
+.TP
+.B \-\-verbose
+Both tools log in detail.
+.TP
+.BR \-\-help ", " \-h
+The options, briefly.
+.TP
+.B \-\-man
+This manual.
+.TP
+.BR \-\-version ", " \-V
+The launcher's version.
+.SH CONSOLE OPTIONS
+Options of
+.B bitchat-console
+that go in
+.BR \-\-console\-args .
+.TP
+.BI \-\-data\-dir " dir"
+Keys (device seed, Noise identity) and local storage (muted keys, saved and scheduled
+messages). Default:
+.BR ~/.bitchat-console .
+Files are created readable by you only; files readable by others are refused.
+.TP
+.BI \-\-relays\-csv " url|path"
+The iOS relay list (geohash and coordinates of each relay). Default: the app's official list,
+downloaded through Tor, with a cached copy if the download fails.
+.TP
+.BI \-\-android\-csv " url|path"
+The Android relay list. Default: the Android app's official list.
+.TP
+.B \-\-no\-android
+No Android list: only the iOS choice of relays.
+.TP
+.BR \-\-apps " both|ios|android"
+Whose choice of relays is used for each cell: both apps' (default, the union), or one.
+.TP
+.BI \-\-dm\-relays " url,url"
+Relays of private messages. Default: the apps' default relays.
+.TP
+.B \-\-no\-presence
+Send no presence, even when not teleported.
+.TP
+.BI \-\-pow\-bits " n"
+Proof of work on sent messages, 0 to 32 bits (default 8, as the iOS app). It is computed for
+2 seconds at most, then the target is halved.
+.TP
+.B \-\-teleport
+Same as the launcher's
+.BR \-\-teleport .
+.TP
+.B \-\-verbose
+Detailed logs of the console only.
+.PP
+Set by the launcher:
+.B \-\-listen
+(the page's port),
+.B \-\-map
+(the map),
+.BR \-\-tor\-socks / \-\-arti ,
+.BR \-\-tls\-cert / \-\-tls\-key .
+.SH MAP OPTIONS
+Options of
+.B bitchat-geohash
+that go in
+.BR \-\-map\-args .
+.TP
+.BI \-\-depth " n"
+Channel levels watched below the area (default 1). Same as the launcher's
+.BR \-\-depth .
+.TP
+.BI \-\-levels " 2,4,5,6"
+Channel levels shown (2 region, 4 province, 5 city, 6 neighbourhood, 7 block).
+.TP
+.BI \-\-max\-cells " n"
+Most channels watched at once (default 2048); a bigger area is refused.
+.TP
+.BI \-\-window " 15m"
+Counting window of messages and participants (90, 90s, 15m, 2h).
+.TP
+.BI \-\-inactivity " 15m"
+A watched channel without any event for this long is retired (it can be reinstated from the
+map).
+.TP
+.BI \-\-relays\-csv " url|path"
+.TQ
+.BI \-\-android\-csv " url|path"
+.TQ
+.B \-\-no\-android
+Relay lists, as for the console.
+.TP
+.B \-\-no\-probe
+Do not probe the relays before listening (dead relays are then listened to as well).
+.TP
+.BI \-\-db " path"
+The map's database (relay probes, retired channels, descents). Default with the launcher:
+.IR data-dir /bitchat-geohash.sqlite.
+.TP
+.B \-\-reinstate\-all
+Watch again the channels retired in a previous run.
+.TP
+.B \-\-forget\-descents
+Do not restore the channels added by descents in previous runs, and forget them.
+.TP
+.BI \-\-tiles " url " \-\-tiles\-attribution " html"
+Other map tiles, with their provider's credit (default: OpenStreetMap).
+.TP
+.B \-\-verbose
+Detailed logs of the map only.
+.PP
+Set by the launcher:
+.BR \-\-listen ;
+the map is served in clear HTTP on the loopback, to the console only.
+.SH TOR
+The console never connects to a relay without Tor. Unless
+.B \-\-tor\-socks
+or
+.B \-\-arti
+is given, the launcher tries in order:
+.IP 1. 4
+the SOCKS port in
+.BR $BITCHAT_TOR_SOCKS ;
+.IP 2. 4
+the Tor daemon's default port, 127.0.0.1:9050;
+.IP 3. 4
+Arti, inside bitchat-console.
+.PP
+A daemon counts as working when it takes a SOCKS user name (the console isolates each cell
+on its own circuit by user name) and opens a stream to check.torproject.org:443 within 30
+seconds. With Arti, the console bootstraps Tor itself (a few seconds, longer the first time).
+To install the daemon on macOS:
+.B brew install tor
+then
+.B tor
+or
+.BR "brew services start tor" .
+.PP
+The map does not use Tor: it connects to the relays directly, read\-only (it never publishes).
+The browser loads the map tiles directly too.
+.SH HTTPS
+Over HTTP/1.1 a browser keeps at most 6 connections per host, and each live view (map, console)
+holds one; HTTPS brings HTTP/2, without that limit. By default the launcher makes, once, a
+certificate for localhost, 127.0.0.1 and ::1 with
+.BR mkcert ,
+in
+.IR data-dir /tls
+(key readable by you only). The browser trusts it when mkcert's authority is installed:
+.BR "brew install mkcert && mkcert \-install" ,
+once.
+.SH ENVIRONMENT
+.TP
+.B BITCHAT_TOR_SOCKS
+A Tor daemon's SOCKS port
+.RI ( addr:port ),
+tried first.
+.TP
+.B PATH
+Where the tools are looked for when they are not next to the launcher.
+.SH FILES
+.TP
+.B ~/.bitchat-launcher/tls/cert.pem, key.pem
+The page's certificate.
+.TP
+.B ~/.bitchat-launcher/bitchat-geohash.sqlite
+The map's database.
+.TP
+.B ~/.bitchat-console/
+The console's keys and storage.
+.SH EXIT STATUS
+0 after Ctrl\-C or SIGTERM; 1 when a tool cannot start, does not answer within 5 minutes, or
+stops on its own; 2 for a wrong command line.
+.SH EXAMPLES
+.TP
+.B bitchat-launcher u09tv \-\-teleport
+Follow #u09tv and its neighbours as a teleported user, over the map of #u09t.
+.TP
+.B bitchat-launcher u09tv \-\-map\-geohash u09 \-\-depth 2
+A wider map: #u09, two levels down.
+.TP
+.B BITCHAT_TOR_SOCKS=127.0.0.1:9150 bitchat-launcher u09tv
+Through Tor Browser's port when it is open.
+.TP
+.B bitchat-launcher u09tv \-\-console\-args \(aq\-\-apps ios \-\-pow\-bits 12\(aq \-\-map\-args \(aq\-\-no\-probe\(aq
+Options of each tool.
+.SH PRIVACY
+Received messages, nicknames and keys stay in the console's memory; nothing about other people
+is written to disk or to the logs, except the keys you mute. The map gets counts only. Both
+pages are served on the loopback only.
+.SH SEE ALSO
+.BR bitchat-console " (README.md, SPECIFICATIONS.md),"
+.BR bitchat-geohash " (README.md),"
+.BR tor (1),
+.BR mkcert (1).
