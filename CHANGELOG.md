@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 ### Added
+- README: installing the binaries (macOS and Linux, arm64 and amd64, Docker), checking them
+  (GPG, SHA-256, Gatekeeper) and uninstalling, apart from the development environment. The
+  signed packages are published in this repository's releases too (tags `bitchat-web-*`).
 - `--behind-proxy https://<name>` and `--no-proxy-check` (L12): a TLS proxy on this machine
   serves the page at that name; the console runs behind it (its D34), the map behind the
   console, no mkcert; the page's port is `--port` or 8080, never another one; the browser
