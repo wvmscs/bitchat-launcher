@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-29
+
 ### Added
 - README: installing the binaries (macOS and Linux, arm64 and amd64, Docker), checking them
   (GPG, SHA-256, Gatekeeper) and uninstalling, apart from the development environment. The

@@ -33,3 +33,4 @@ Toutes *prises par l'agent, à revoir*, sauf celles de la demande.
 | 28/10/2026 | Deux tests instables corrigés (le port d'un test pouvait être repris par un test voisin ; la carte factice pouvait être arrêtée avant d'écrire ses arguments). 40 passes sans échec. Les commits `90ecf8f` et `76ecb37` étaient partis avec un test rouge par intermittence. |
 | 29/10/2026 | Tag `v0.1.0` posé (version 0.1.0), à la demande de l'utilisateur. |
 | 29/10/2026 | Derrière un proxy TLS (L12, D34 de la console) : `--behind-proxy`, `--no-proxy-check`, options refusées dans `--console-args`/`--map-args`, manuel (section BEHIND A PROXY), README. Essai réel derrière Caddy : sonde de la console passée, page et carte dans Chrome. |
+| 29/10/2026 | Version 0.1.1 (tag `v0.1.1`), avant l'ouverture au public, à la demande de l'utilisateur. |

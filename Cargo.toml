@@ -3,7 +3,7 @@
 
 [package]
 name = "bitchat-launcher"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Starts bitchat-geohash (the map) and bitchat-console (over it) together: free ports, HTTPS, Tor daemon or Arti."
 license = "GPL-3.0-or-later"
