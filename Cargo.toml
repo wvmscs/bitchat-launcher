@@ -8,8 +8,7 @@ edition = "2024"
 description = "Starts bitchat-geohash (the map) and bitchat-console (over it) together: free ports, HTTPS, Tor daemon or Arti."
 license = "GPL-3.0-or-later"
 
-# Own workspace: the crate builds on its own, also inside the local `Nostr/`
-# directory, whose workspace does not list it.
+# Own workspace: the crate builds on its own, also inside another workspace.
 [workspace]
 
 [dependencies]

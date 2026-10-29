@@ -8,3 +8,5 @@
 *.sqlite-shm
 .env
 .DS_Store
+# Rules of the author's local checkout (see AGENTS.md).
+/AGENTS.local.md

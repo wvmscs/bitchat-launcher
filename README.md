@@ -26,9 +26,9 @@ is the manual, with every option of both tools (`--console-args`, `--map-args`).
 ```sh
 brew install mkcert && mkcert -install        # once: the browser trusts the page
 brew install tor && brew services start tor   # optional: else Arti is used
-cargo install --path ../bitchat-console --features arti
-cargo install --path ../bitchat-geohash
-cargo install --path .
+cargo install --git https://github.com/wvmscs/bitchat-console --features arti
+cargo install --git https://github.com/wvmscs/bitchat-geohash
+cargo install --git https://github.com/wvmscs/bitchat-launcher
 ```
 
 The tools are looked for next to the launcher, then on `$PATH` (or `--console-bin`,

@@ -11,9 +11,9 @@ them: they need two SQLite versions that cannot be linked together (bitchat-cons
 ## Constraints
 
 ### Do NOT
-- Modify `bitchat-envelope`, `nip90-dvm`, the workspace `Nostr/Cargo.toml` or `src/`
-  (read-only). `bitchat-console`, `bitchat-geohash` and `geohash-relays` follow their own
-  `AGENTS.md`.
+- Modify another repository from here: `bitchat-console`, `bitchat-geohash` and
+  `geohash-relays` follow their own `AGENTS.md`. Rules that only concern the author's local
+  checkout, if any, are in `AGENTS.local.md` (not committed).
 - Give the console a way to reach relays without Tor: the launcher passes `--tor-socks` or
   `--arti`, never nothing.
 - Serve anything beyond the loopback.
