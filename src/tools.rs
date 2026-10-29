@@ -140,7 +140,6 @@ pub async fn listening(port: u16) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::os::unix::fs::PermissionsExt;
 
     fn scratch(name: &str) -> PathBuf {
         let d =
@@ -190,15 +189,13 @@ mod tests {
         let script = d.join("tool");
         // Exits 0 on SIGINT; says when its trap is set.
         let ready = d.join("ready");
-        std::fs::write(
+        crate::testutil::script(
             &script,
-            format!(
-                "#!/bin/sh\ntrap 'exit 0' INT\ntouch {}\nwhile :; do sleep 0.1; done\n",
+            &format!(
+                "trap 'exit 0' INT\ntouch {}\nwhile :; do sleep 0.1; done\n",
                 ready.display()
             ),
-        )
-        .unwrap();
-        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
+        );
         let mut t = Tool::spawn("tool", "t", &script, &[]).unwrap();
         while !ready.exists() {
             tokio::time::sleep(Duration::from_millis(20)).await;
@@ -214,12 +211,7 @@ mod tests {
     async fn killed_when_deaf() {
         let d = scratch("deaf");
         let script = d.join("tool");
-        std::fs::write(
-            &script,
-            "#!/bin/sh\ntrap '' INT\nwhile :; do sleep 0.1; done\n",
-        )
-        .unwrap();
-        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
+        crate::testutil::script(&script, "trap '' INT\nwhile :; do sleep 0.1; done\n");
         let mut t = Tool::spawn("tool", "t", &script, &[]).unwrap();
         tokio::time::sleep(Duration::from_millis(300)).await;
         t.stop(Duration::from_millis(500)).await;

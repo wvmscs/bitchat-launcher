@@ -14,6 +14,8 @@ use std::time::{Duration, Instant};
 /// exits 0 on SIGINT; with `FAIL`, exits 1 at once.
 const FAKE: &str = r#"#!/usr/bin/env python3
 import os, signal, socket, sys
+if sys.argv[1:] == ["--ready"]:
+    sys.exit(0)
 name = os.path.basename(sys.argv[0])
 here = os.path.dirname(os.path.abspath(sys.argv[0]))
 with open(os.path.join(here, name + ".args"), "w") as f:
@@ -39,8 +41,26 @@ fn scratch(name: &str) -> PathBuf {
         let p = d.join(tool);
         std::fs::write(&p, FAKE).unwrap();
         std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0o755)).unwrap();
+        ready(&p);
     }
     d
+}
+
+/// Waits until a fake tool can run: on Linux, a test that starts a process
+/// at the same time can keep it open for writing a moment ("text file busy").
+fn ready(p: &Path) {
+    for _ in 0..500 {
+        match Command::new(p).arg("--ready").status() {
+            Err(e) if e.kind() == std::io::ErrorKind::ExecutableFileBusy => {
+                std::thread::sleep(Duration::from_millis(10))
+            }
+            status => {
+                assert!(status.unwrap().success());
+                return;
+            }
+        }
+    }
+    panic!("{} still busy", p.display());
 }
 
 /// Tests run side by side: each page gets its own free port, not 8080.

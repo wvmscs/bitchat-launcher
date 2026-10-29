@@ -11,6 +11,8 @@
 
 pub mod args;
 pub mod ports;
+#[cfg(test)]
+mod testutil;
 pub mod tls;
 pub mod tools;
 pub mod tor;

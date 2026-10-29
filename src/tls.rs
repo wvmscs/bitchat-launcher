@@ -93,16 +93,14 @@ mod tests {
             std::fs::write(ca_dir.join("rootCA.pem"), "x").unwrap();
         }
         let p = dir.join("mkcert");
-        std::fs::write(
+        crate::testutil::script(
             &p,
-            format!(
-                "#!/bin/sh\n[ \"$1\" = -CAROOT ] && {{ echo {}; exit 0; }}\n\
+            &format!(
+                "[ \"$1\" = -CAROOT ] && {{ echo {}; exit 0; }}\n\
                  echo cert > \"$2\"; echo key > \"$4\"\n",
                 ca_dir.display()
             ),
-        )
-        .unwrap();
-        std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0o755)).unwrap();
+        );
         p.display().to_string()
     }
 
