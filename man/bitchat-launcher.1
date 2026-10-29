@@ -21,7 +21,10 @@ bitchat-launcher \- the BitChat map (bitchat-geohash) with the console (bitchat-
 .I pem
 .B \-\-tls\-key
 .I pem
-.RB "| " \-\-http ]
+.RB "| " \-\-http
+.RB "| " \-\-behind\-proxy
+.I https://name
+.RB [ \-\-no\-proxy\-check ]]
 .RB [ \-\-console\-args
 .IR args ]
 .RB [ \-\-map\-args
@@ -104,6 +107,20 @@ The page's certificate and private key, instead of the one the launcher makes.
 Clear HTTP on the loopback instead of HTTPS. The browser then keeps at most 6 connections
 to the page, one per live view.
 .TP
+.BI \-\-behind\-proxy " https://name"
+A TLS proxy on this machine (Cloudflare Tunnel, NGINX, Caddy) serves the page at that
+name, and sends the requests in clear HTTP to the page's port: the one of
+.BR \-\-port ,
+else 8080, never another one. The console accepts only what comes from the loopback through
+the proxy in HTTPS, and checks at start that the name leads to it (see
+.BR "BEHIND A PROXY" ).
+The browser opens at that name.
+.TP
+.B \-\-no\-proxy\-check
+With
+.BR \-\-behind\-proxy :
+start without the check.
+.TP
 .BI \-\-console\-args " args"
 More options for bitchat-console (see
 .BR "CONSOLE OPTIONS" ),
@@ -111,6 +128,7 @@ in one argument split like a shell does:
 .B \-\-console\-args \(aq\-\-pow\-bits 12 \-\-no\-presence\(aq.
 May be repeated. The options the launcher sets are refused:
 .BR \-\-listen ", " \-\-allow\-remote ", " \-\-tls\-cert ", " \-\-tls\-key ", " \-\-map ,
+.BR \-\-behind\-proxy ", " \-\-proxy\-from ", " \-\-no\-proxy\-check ,
 .BR \-\-tor\-socks ", " \-\-arti ", " \-\-open .
 .TP
 .BI \-\-map\-args " args"
@@ -118,7 +136,8 @@ More options for bitchat-geohash (see
 .BR "MAP OPTIONS" ),
 the same way. Refused:
 .BR \-\-listen ", " \-\-allow\-remote ", " \-\-insecure\-remote ", " \-\-tls\-cert ,
-.BR \-\-tls\-key ", " \-\-open .
+.BR \-\-tls\-key ", " \-\-behind\-proxy ", " \-\-proxy\-from ", " \-\-no\-proxy\-check ,
+.BR \-\-open .
 They come after the launcher's own, so a
 .B \-\-db
 given here wins.
@@ -198,7 +217,12 @@ Set by the launcher:
 .B \-\-map
 (the map),
 .BR \-\-tor\-socks / \-\-arti ,
-.BR \-\-tls\-cert / \-\-tls\-key .
+.BR \-\-tls\-cert / \-\-tls\-key
+or
+.BR \-\-behind\-proxy / \-\-no\-proxy\-check .
+Run alone, bitchat-console also takes
+.BI \-\-proxy\-from " addr|net,..."
+(the proxy's addresses, default the loopback) for a proxy on another machine.
 .SH MAP OPTIONS
 Options of
 .B bitchat-geohash
@@ -254,7 +278,7 @@ Detailed logs of the map only.
 .PP
 Set by the launcher:
 .BR \-\-listen ;
-the map is served in clear HTTP on the loopback, to the console only.
+the map is served in clear HTTP on the loopback, to the console only, also behind a proxy.
 .SH TOR
 The console never connects to a relay without Tor. Unless
 .B \-\-tor\-socks
@@ -291,6 +315,26 @@ in
 (key readable by you only). The browser trusts it when mkcert's authority is installed:
 .BR "brew install mkcert && mkcert \-install" ,
 once.
+.SH BEHIND A PROXY
+For a public name, a TLS proxy on this machine does the HTTPS and HTTP/2 instead:
+.BR "bitchat-launcher u09tv \-\-behind\-proxy https://bitchat.example.org \-\-port 8080" ,
+with the proxy sending
+.B https://bitchat.example.org
+to
+.BR http://127.0.0.1:8080 .
+No mkcert then. Every request must come from the loopback, carry
+.B X-Forwarded-Proto: https
+(or
+.BR Forwarded ", " CF-Visitor )
+and the public name in
+.BR Host ;
+the console refuses the others (403, 421). At start it asks
+.B https://bitchat.example.org/.well-known/bitchat-proxy-check
+and expects a token drawn at that start, else it stops (and the launcher with it).
+The console has no login: put one in the proxy, and leave that path open or use
+.BR \-\-no\-proxy\-check .
+The configurations for Cloudflare Tunnel, NGINX and Caddy are in bitchat-console's
+.IR docs/behind-proxy.md .
 .SH ENVIRONMENT
 .TP
 .B BITCHAT_TOR_SOCKS
@@ -329,7 +373,8 @@ Options of each tool.
 .SH PRIVACY
 Received messages, nicknames and keys stay in the console's memory; nothing about other people
 is written to disk or to the logs, except the keys you mute. The map gets counts only. Both
-pages are served on the loopback only.
+pages are served on the loopback only (behind a proxy, the console's page reaches beyond it
+through the proxy).
 .SH SEE ALSO
 .BR bitchat-console " (README.md, SPECIFICATIONS.md),"
 .BR bitchat-geohash " (README.md),"

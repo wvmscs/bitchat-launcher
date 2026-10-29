@@ -10,7 +10,10 @@ bitchat-launcher u09tv --teleport
 - **Ports**: the page on 8080, or on a free port between 50000 and 60000 when 8080 is taken;
   the map on another free port of that range, reached by the console only.
 - **HTTPS** (HTTP/2, no 6-stream limit of the browser): a certificate for localhost made once
-  with mkcert in `~/.bitchat-launcher/tls`.
+  with mkcert in `~/.bitchat-launcher/tls`. Or a TLS proxy on this machine in front (Cloudflare
+  Tunnel, NGINX, Caddy), for a public name: `--behind-proxy https://bitchat.example.org
+  --port 8080`, configurations in bitchat-console's
+  [docs/behind-proxy.md](https://github.com/wvmscs/bitchat-console/blob/main/docs/behind-proxy.md).
 - **Tor** for the console: `$BITCHAT_TOR_SOCKS`, else the Tor daemon on 127.0.0.1:9050, else
   Arti inside bitchat-console. The map does not use Tor (read-only, it never publishes).
 - Opens the page when both answer; Ctrl-C stops both; if one stops, the other is stopped.

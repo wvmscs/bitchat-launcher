@@ -22,6 +22,7 @@ Toutes *prises par l'agent, à revoir*, sauf celles de la demande.
 | L9 | Navigateur | Ouvert par défaut quand les deux répondent (`--no-open`), sur `https://localhost:<port>/`. |
 | L10 | Base de la carte | `~/.bitchat-launcher/bitchat-geohash.sqlite` (et non le dossier courant) ; `--map-args '--db …'` sinon. |
 | L11 | Dépendances | `tokio` (processus, signaux, TCP) et `libc` (SIGINT à un enfant). Pas de bibliothèque d'arguments : même approche à la main que les deux outils. |
+| L12 | Derrière un proxy | `--behind-proxy https://<nom>` (demande du 29/10/2026) : un proxy TLS de la même machine sert la page ; la console seule reçoit le mode (`--behind-proxy`, `--no-proxy-check`), sur 127.0.0.1, la carte reste derrière la console ; pas de mkcert ; port de `--port` ou 8080, sans repli (le proxy vise un port) ; le navigateur s'ouvre sur le nom public. La règle « boucle locale seulement » tient — *à valider* |
 
 ## Journal
 
@@ -31,3 +32,4 @@ Toutes *prises par l'agent, à revoir*, sauf celles de la demande.
 | 28/10/2026 | Manuel : la carte suit la cellule de la console (bitchat-geohash 0.2.0, D30 de la console). |
 | 28/10/2026 | Deux tests instables corrigés (le port d'un test pouvait être repris par un test voisin ; la carte factice pouvait être arrêtée avant d'écrire ses arguments). 40 passes sans échec. Les commits `90ecf8f` et `76ecb37` étaient partis avec un test rouge par intermittence. |
 | 29/10/2026 | Tag `v0.1.0` posé (version 0.1.0), à la demande de l'utilisateur. |
+| 29/10/2026 | Derrière un proxy TLS (L12, D34 de la console) : `--behind-proxy`, `--no-proxy-check`, options refusées dans `--console-args`/`--map-args`, manuel (section BEHIND A PROXY), README. Essai réel derrière Caddy : sonde de la console passée, page et carte dans Chrome. |

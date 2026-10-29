@@ -70,14 +70,16 @@ struct Prepared {
     map_port: u16,
     tor: Tor,
     arti_fallback: bool,
-    https: bool,
+    /// The page's address: `https://localhost:port/`, `http://…`, or the
+    /// proxy's public name.
+    url: String,
     console: Tool,
     map: Tool,
 }
 
 async fn prepare(a: &Args) -> Result<Prepared, String> {
     let tls = match &a.https {
-        Https::Off => None,
+        Https::Off | Https::Proxy { .. } => None,
         Https::Files { cert, key } => {
             for f in [cert, key] {
                 if !f.is_file() {
@@ -96,8 +98,18 @@ async fn prepare(a: &Args) -> Result<Prepared, String> {
     };
 
     let seed = ports::seed();
-    let port = match a.port {
+    // The proxy points to one port: no other one instead.
+    let fixed = match &a.https {
+        Https::Proxy { .. } => Some(a.port.unwrap_or(ports::PREFERRED)),
+        _ => a.port,
+    };
+    let port = match fixed {
         Some(p) if ports::is_free(p) => p,
+        Some(p) if a.port.is_none() => {
+            return Err(format!(
+                "port {p}, where the proxy sends, is already in use (--port for another)"
+            ));
+        }
         Some(p) => return Err(format!("port {p} (--port) is already in use")),
         None => ports::pick(
             Some(ports::PREFERRED),
@@ -156,7 +168,11 @@ async fn prepare(a: &Args) -> Result<Prepared, String> {
         map_port,
         tor,
         arti_fallback,
-        https: tls.is_some(),
+        url: match &a.https {
+            Https::Proxy { public, .. } => format!("{}/", public.trim_end_matches('/')),
+            _ if tls.is_some() => format!("https://localhost:{port}/"),
+            _ => format!("http://localhost:{port}/"),
+        },
         console,
         map,
     })
@@ -219,8 +235,7 @@ async fn supervise(a: &Args, mut p: Prepared) -> i32 {
             _ = tokio::time::sleep(Duration::from_millis(250)) => {}
         }
     }
-    let scheme = if p.https { "https" } else { "http" };
-    let url = format!("{scheme}://localhost:{}/", p.port);
+    let url = p.url.clone();
     let tor = match p.tor {
         Tor::Socks(addr) => format!("Tor daemon {addr}"),
         Tor::Arti => "Arti".into(),

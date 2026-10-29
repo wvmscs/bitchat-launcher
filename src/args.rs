@@ -27,6 +27,10 @@ Tor (the console's relays; the map connects directly):
 HTTPS (default; certificate made with mkcert in <data-dir>/tls):
   --tls-cert <pem> --tls-key <pem>   own certificate
   --http                 clear HTTP on the loopback (the browser then keeps 6 live streams)
+  --behind-proxy <https://name>  a TLS proxy on this machine serves the page at that name
+                         (Cloudflare Tunnel, NGINX, Caddy) to the port of --port (default
+                         8080); the console checks at start that the name leads to it
+  --no-proxy-check       with --behind-proxy: start without that check
 
 Tools:
   --console-args '<args>'  more options for bitchat-console (see --man)
@@ -49,6 +53,9 @@ const CONSOLE_MANAGED: &[&str] = &[
     "--allow-remote",
     "--tls-cert",
     "--tls-key",
+    "--behind-proxy",
+    "--proxy-from",
+    "--no-proxy-check",
     "--map",
     "--tor-socks",
     "--arti",
@@ -62,6 +69,9 @@ const MAP_MANAGED: &[&str] = &[
     "--insecure-remote",
     "--tls-cert",
     "--tls-key",
+    "--behind-proxy",
+    "--proxy-from",
+    "--no-proxy-check",
     "--open",
 ];
 
@@ -85,6 +95,12 @@ pub enum Https {
         key: PathBuf,
     },
     Off,
+    /// Clear HTTP on the loopback, to a TLS proxy of this machine that serves
+    /// `public` (L12); `check`: the console checks that it leads to it.
+    Proxy {
+        public: String,
+        check: bool,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -151,6 +167,7 @@ pub fn parse(
     };
     let mut map_geohash = None;
     let (mut cert, mut key, mut http) = (None::<PathBuf>, None::<PathBuf>, false);
+    let (mut public, mut no_check) = (None::<String>, false);
     while let Some(arg) = it.next() {
         let mut value = || it.next().ok_or_else(|| format!("{arg} needs a value"));
         match arg.as_str() {
@@ -187,6 +204,16 @@ pub fn parse(
             "--tls-cert" => cert = Some(value()?.into()),
             "--tls-key" => key = Some(value()?.into()),
             "--http" => http = true,
+            "--behind-proxy" => {
+                let v = value()?;
+                if !v.starts_with("https://") {
+                    return Err(format!(
+                        "--behind-proxy: the public address, https://name, got {v:?}"
+                    ));
+                }
+                public = Some(v)
+            }
+            "--no-proxy-check" => no_check = true,
             "--console-args" => a.console_args.extend(split(&value()?)?),
             "--map-args" => a.map_args.extend(split(&value()?)?),
             "--console-bin" => a.console_bin = Some(value()?.into()),
@@ -208,6 +235,18 @@ pub fn parse(
         g[..g.len().saturating_sub(1).max(1)].to_owned()
     });
     a.https = match (cert, key, http) {
+        (None, None, false) if public.is_some() => Https::Proxy {
+            public: public.take().unwrap_or_default(),
+            check: !no_check,
+        },
+        _ if public.is_some() => {
+            return Err(
+                "--behind-proxy: the proxy does the TLS (no --http, --tls-cert nor \
+                 --tls-key)"
+                    .into(),
+            );
+        }
+        _ if no_check => return Err("--no-proxy-check goes with --behind-proxy".into()),
         (None, None, false) => Https::Auto,
         (None, None, true) => Https::Off,
         (Some(cert), Some(key), false) => Https::Files { cert, key },
@@ -293,7 +332,7 @@ pub enum Tor {
 }
 
 /// Arguments of bitchat-console, serving the page on `port` over the map on
-/// `map_port`.
+/// `map_port`. Behind a proxy, only the console is: the map stays behind it.
 pub fn console_command(
     a: &Args,
     port: u16,
@@ -322,6 +361,12 @@ pub fn console_command(
             "--tls-key".into(),
             key.display().to_string(),
         ]);
+    }
+    if let Https::Proxy { public, check } = &a.https {
+        v.extend(["--behind-proxy".into(), public.clone()]);
+        if !check {
+            v.push("--no-proxy-check".into());
+        }
     }
     if a.verbose {
         v.push("--verbose".into());
@@ -408,6 +453,54 @@ mod tests {
         assert_eq!(a.map_args[3], "tiles: me, you");
         assert_eq!(a.console_bin, Some(PathBuf::from("/b/c")));
         assert_eq!(run(&["u09", "--arti", "--http"]).unwrap().https, Https::Off);
+    }
+
+    #[test]
+    fn behind_a_proxy() {
+        let a = run(&[
+            "u09tv",
+            "--behind-proxy",
+            "https://b.example.org",
+            "--port",
+            "8090",
+        ])
+        .unwrap();
+        assert_eq!(
+            a.https,
+            Https::Proxy {
+                public: "https://b.example.org".into(),
+                check: true
+            }
+        );
+        let v = console_command(&a, 8090, 51000, &Tor::Arti, None);
+        let at = v.iter().position(|s| s == "--behind-proxy").unwrap();
+        assert_eq!(v[at + 1], "https://b.example.org");
+        assert_eq!(v[1..3], ["--listen", "127.0.0.1:8090"]);
+        assert!(!v.contains(&"--no-proxy-check".to_string()));
+        let a = run(&[
+            "u09tv",
+            "--behind-proxy",
+            "https://b.example.org",
+            "--no-proxy-check",
+        ])
+        .unwrap();
+        assert!(
+            console_command(&a, 8080, 51000, &Tor::Arti, None)
+                .contains(&"--no-proxy-check".to_string())
+        );
+        assert!(!map_command(&a, 51000).contains(&"--behind-proxy".to_string()));
+
+        let err = |s: &[&str]| run(s).unwrap_err();
+        assert!(err(&["u09", "--behind-proxy", "http://b"]).contains("https://name"));
+        assert!(
+            err(&["u09", "--behind-proxy", "https://b", "--http"])
+                .contains("the proxy does the TLS")
+        );
+        assert!(err(&["u09", "--no-proxy-check"]).contains("goes with --behind-proxy"));
+        assert!(
+            err(&["u09", "--console-args", "--proxy-from 10.0.0.1"])
+                .contains("set by the launcher")
+        );
     }
 
     #[test]

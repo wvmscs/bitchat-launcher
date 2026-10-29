@@ -3,6 +3,13 @@
 ## [Unreleased]
 
 ### Added
+- `--behind-proxy https://<name>` and `--no-proxy-check` (L12): a TLS proxy on this machine
+  serves the page at that name; the console runs behind it (its D34), the map behind the
+  console, no mkcert; the page's port is `--port` or 8080, never another one; the browser
+  opens at the public name. `--behind-proxy`, `--proxy-from` and `--no-proxy-check` are refused
+  in `--console-args` and `--map-args`.
+
+### Added
 - Opening to the public: `SECURITY.md`, `CONTRIBUTING.md`, issue and pull request templates, CI (fmt, clippy, tests, `cargo deny`), `deny.toml`, Dependabot; actions pinned by commit.
 
 ## [0.1.0] - 2026-10-29
