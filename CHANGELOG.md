@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Opening to the public: `SECURITY.md`, `CONTRIBUTING.md`, issue and pull request templates, CI (fmt, clippy, tests, `cargo deny`), `deny.toml`, Dependabot; actions pinned by commit.
+
 ## [0.1.0] - 2026-10-29
 
 ### Added
