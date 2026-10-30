@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-10-30
+
+### Fixed
+- Tests: wait until a fake tool can run (Linux "text file busy").
+
 ## [0.1.1] - 2026-10-29
 
 ### Added
