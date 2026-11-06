@@ -6,7 +6,7 @@ Guidance for coding agents (and humans) working in this crate.
 
 A launcher: it starts `bitchat-geohash` (the map) and `bitchat-console` (over it) as two child
 processes, with free ports, HTTPS and a working Tor, and stops them together. It does not link
-them: they need two SQLite versions that cannot be linked together (bitchat-console D26).
+them: they need two SQLite versions that cannot be linked together.
 
 ## Constraints
 
@@ -20,13 +20,13 @@ them: they need two SQLite versions that cannot be linked together (bitchat-cons
 - Commit certificates, keys, `.env` or database files.
 
 ### DO
-- Keep `PLAN.md` (French) up to date: decisions, dated journal line; `CHANGELOG.md`.
+- Keep `CHANGELOG.md` up to date.
 - Keep `--help`, the manual (`man/bitchat-launcher.1`) and the README in step with the options,
   and the manual's tool sections in step with the tools' options.
 - Run the commands below before each commit.
 
 ### Others
-- Own `[workspace]`, own `Cargo.lock`, GPL-3.0-only.
+- Own `[workspace]`, own `Cargo.lock`, GPL-3.0-or-later.
 - Commits only when the user asks. Never force-push.
 
 ## Commands
@@ -46,5 +46,5 @@ A new file starts with
 
 ## Style
 
-Code, comments, `--help`, the manual and messages in English; `PLAN.md` in French. Messages
+Code, comments, `--help`, the manual, messages and documentation in English. Messages
 start with `bitchat-launcher:`; the tools' lines with `[map]` or `[console]`.

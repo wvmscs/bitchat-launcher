@@ -155,8 +155,7 @@ cargo test     # offline: fake tools, fake SOCKS proxy, fake mkcert
 
 ## Documents
 
-[PLAN.md](PLAN.md) (in French): decisions and journal. [AGENTS.md](AGENTS.md): working rules.
-[CHANGELOG.md](CHANGELOG.md).
+[AGENTS.md](AGENTS.md): working rules. [CHANGELOG.md](CHANGELOG.md).
 
 ## Licence
 
